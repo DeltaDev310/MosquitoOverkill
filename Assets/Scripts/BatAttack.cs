@@ -1,66 +1,59 @@
 using UnityEngine;
+using System.Collections;
 
 public class BatAttack : MonoBehaviour
 {
-    public float swingDuration = 0.15f;
+    public float swingAngle = 180f;
+    public float swingDuration = 0.25f;
 
-    private bool swinging;
-    private float swingTimer;
-
-    private Vector3 startPosition = new Vector3(-0.1f, -0.05f, 0f);
-    private Vector3 attackPosition = new Vector3(0.1f, -0.05f, 0f);
-
-    private Quaternion startRotation = Quaternion.Euler(0f, 0f, 90f);
-    private Quaternion attackRotation = Quaternion.Euler(0f, 0f, 270f);
-
-    void Start()
-    {
-        transform.localPosition = startPosition;
-        transform.localRotation = startRotation;
-    }
+    private bool isSwinging = false;
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0) && !swinging)
+        if (Input.GetMouseButtonDown(0) && !isSwinging)
         {
-            swinging = true;
-            swingTimer = 0f;
+            StartCoroutine(Swing());
+        }
+    }
+
+    IEnumerator Swing()
+    {
+        isSwinging = true;
+
+        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        mousePosition.z = 0f;
+
+        Vector2 direction = mousePosition - transform.position;
+
+        float aimAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+
+        // Player faces DOWN by default.
+        // The bat sprite itself has a 90° rotation,
+        // so compensate for that here.
+        float centerAngle = aimAngle - 90f;
+
+        // 180° swing: left side → front → right side
+        float startAngle = centerAngle + 90f;
+        float endAngle = centerAngle - 90f;
+
+        float elapsed = 0f;
+
+        while (elapsed < swingDuration)
+        {
+            elapsed += Time.deltaTime;
+
+            float t = elapsed / swingDuration;
+            t = Mathf.SmoothStep(0f, 1f, t);
+
+            float currentAngle = Mathf.Lerp(startAngle, endAngle, t);
+
+            transform.rotation = Quaternion.Euler(0f, 0f, currentAngle);
+
+            yield return null;
         }
 
-        if (swinging)
-        {
-            swingTimer += Time.deltaTime;
+        transform.rotation = Quaternion.Euler(0f, 0f, endAngle);
 
-            float progress = swingTimer / swingDuration;
-
-            if (progress < 0.5f)
-            {
-                float t = progress * 2f;
-
-                transform.localPosition =
-                    Vector3.Lerp(startPosition, attackPosition, t);
-
-                transform.localRotation =
-                    Quaternion.Euler(0f, 0f, 90f + 180f * t);
-            }
-            else
-            {
-                float t = (progress - 0.5f) * 2f;
-
-                transform.localPosition =
-                    Vector3.Lerp(attackPosition, startPosition, t);
-
-                transform.localRotation =
-                    Quaternion.Euler(0f, 0f, 270f + 180f * t);
-            }
-
-            if (progress >= 1f)
-            {
-                swinging = false;
-
-                transform.localPosition = startPosition;
-                transform.localRotation = startRotation;
-            }
-        }
+        isSwinging = false;
     }
 }
