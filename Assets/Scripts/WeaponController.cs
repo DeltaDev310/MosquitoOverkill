@@ -6,16 +6,16 @@ public class WeaponController : MonoBehaviour
     public Transform firePoint;
     public GameObject muzzleFlash;
     public GameObject laser;
-    private LineRenderer laserLine;
 
+    private LineRenderer laserLine;
     private float nextAttackTime;
-    
+
     void Start()
     {
         laserLine = laser.GetComponent<LineRenderer>();
         laser.SetActive(false);
     }
-    
+
     void Update()
     {
         if (Input.GetMouseButton(0) && Time.time >= nextAttackTime)
@@ -82,9 +82,17 @@ public class WeaponController : MonoBehaviour
 
         foreach (RaycastHit2D hit in hits)
         {
+
             if (hit.collider.CompareTag("Mosquito"))
             {
-                Destroy(hit.collider.gameObject);
+                Debug.Log("LASER HIT MOSQUITO");
+
+                Mosquito mosquito = hit.collider.GetComponent<Mosquito>();
+
+                if (mosquito != null)
+                {
+                    mosquito.Die();
+                }
             }
         }
 
@@ -98,18 +106,15 @@ public class WeaponController : MonoBehaviour
     {
         Debug.Log("NUKE");
     }
+
     void ShootShotgun()
     {
-        // Show muzzle flash
         muzzleFlash.SetActive(true);
         Invoke(nameof(HideMuzzleFlash), 0.05f);
 
         Vector2 origin = firePoint.position;
-
-        // Direction the shotgun is facing
         Vector2 direction = firePoint.up;
 
-        // Find all colliders in shotgun range
         Collider2D[] hits = Physics2D.OverlapCircleAll(
             origin,
             currentWeapon.range
@@ -120,14 +125,19 @@ public class WeaponController : MonoBehaviour
             if (!hit.CompareTag("Mosquito"))
                 continue;
 
-            Vector2 toTarget = (hit.transform.position - transform.position).normalized;
+            Vector2 toTarget =
+                (hit.transform.position - transform.position).normalized;
 
             float angle = Vector2.Angle(direction, toTarget);
 
-            // Only hit targets inside the shotgun spread
             if (angle <= currentWeapon.spread / 2f)
             {
-                Destroy(hit.gameObject);
+                Mosquito mosquito = hit.GetComponent<Mosquito>();
+
+                if (mosquito != null)
+                {
+                    mosquito.Die();
+                }
             }
         }
     }
@@ -136,6 +146,7 @@ public class WeaponController : MonoBehaviour
     {
         muzzleFlash.SetActive(false);
     }
+
     void HideLaser()
     {
         laser.SetActive(false);

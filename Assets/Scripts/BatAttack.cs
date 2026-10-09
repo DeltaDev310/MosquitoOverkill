@@ -56,4 +56,20 @@ public class BatAttack : MonoBehaviour
 
         isSwinging = false;
     }
+
+	private void OnTriggerEnter2D(Collider2D other)
+	{
+    if (!isSwinging)
+        return;
+
+    if (other.CompareTag("Mosquito"))
+    {
+        Mosquito mosquito = other.GetComponent<Mosquito>();
+
+        if (mosquito != null)
+        {
+            mosquito.Die();
+        }
+    }
+}	
 }
