@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class UpgradeManager : MonoBehaviour
 {
@@ -10,9 +11,50 @@ public class UpgradeManager : MonoBehaviour
     public GameObject Laser;
     public GameObject Nuke;
     
+    public GameObject WhiteNukeLight;
+    public GameObject RedAlarmLight;
+    public AudioSource AlarmAudio;
+    public AudioSource KazakhstanAudio;
+    public AudioSource NukeAudio;
+    
     private int upgradeStage = 0;
+    private bool nukeActivated = false;
     
     public GameObject UpgradeText;
+
+    public IEnumerator NukeCoroutine()
+    {
+        if (nukeActivated)
+            yield break;
+
+        nukeActivated = true;
+        Time.timeScale = 0f;
+
+        AlarmAudio.Play();
+        KazakhstanAudio.Play();
+
+        for (int i = 0; i < 30; i++)
+        {
+            RedAlarmLight.SetActive(true);
+            yield return new WaitForSecondsRealtime(0.25f);
+
+            RedAlarmLight.SetActive(false);
+            yield return new WaitForSecondsRealtime(0.25f);
+        }
+
+        AlarmAudio.Stop();
+        KazakhstanAudio.Stop();
+
+        RedAlarmLight.SetActive(false);
+        WhiteNukeLight.SetActive(true);
+
+        NukeAudio.Play();
+
+        yield return new WaitForSecondsRealtime(NukeAudio.clip.length);
+
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("Menu");
+    }
     
     public IEnumerator UpgradeCoroutine()
     {
@@ -20,6 +62,7 @@ public class UpgradeManager : MonoBehaviour
         yield return new WaitForSeconds(1f);
         UpgradeText.SetActive(false);
     }
+    
     public void UpgradeWeapon(WeaponType weaponType)
     {
         MosquitoManager.Instance.ClearAllMosquitoes();
@@ -75,7 +118,7 @@ public class UpgradeManager : MonoBehaviour
             UpgradeWeapon(WeaponType.Shotgun);
             upgradeStage = 2;
         }
-        else if (upgradeStage == 2 && kills >= 300)
+        else if (upgradeStage == 2 && kills >= 200)
         {
             UpgradeWeapon(WeaponType.Laser);
             upgradeStage = 3;

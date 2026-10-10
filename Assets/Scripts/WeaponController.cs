@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using System.Collections;
 
 public class WeaponController : MonoBehaviour
 {
@@ -9,6 +11,8 @@ public class WeaponController : MonoBehaviour
 
     private LineRenderer laserLine;
     private float nextAttackTime;
+    
+    public UpgradeManager upgradeManager;
 
     void Start()
     {
@@ -24,6 +28,8 @@ public class WeaponController : MonoBehaviour
             nextAttackTime = Time.time + currentWeapon.cooldown;
         }
     }
+    
+    
 
     void Attack()
     {
@@ -104,7 +110,8 @@ public class WeaponController : MonoBehaviour
 
     void UseNuke()
     {
-        Debug.Log("NUKE");
+        enabled = false;
+        upgradeManager.StartCoroutine(upgradeManager.NukeCoroutine());
     }
 
     void ShootShotgun()
