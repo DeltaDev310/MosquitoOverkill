@@ -9,9 +9,16 @@ public class WeaponController : MonoBehaviour
     public GameObject muzzleFlash;
     public GameObject laser;
 
+    [Header("Weapon Audio")]
+    public AudioSource weaponAudioSource;
+    public AudioClip gunShotSound;
+    public AudioClip batSwingSound;
+    public AudioClip shotgunShotSound;
+    public AudioClip laserShotSound;
+
     private LineRenderer laserLine;
     private float nextAttackTime;
-    
+
     public UpgradeManager upgradeManager;
 
     void Start()
@@ -28,8 +35,6 @@ public class WeaponController : MonoBehaviour
             nextAttackTime = Time.time + currentWeapon.cooldown;
         }
     }
-    
-    
 
     void Attack()
     {
@@ -57,22 +62,43 @@ public class WeaponController : MonoBehaviour
         }
     }
 
-    void Shoot()
+    void PlayWeaponSound(AudioClip sound)
     {
-        Instantiate(
-            currentWeapon.projectile,
-            firePoint.position,
-            firePoint.rotation
-        );
+        if (weaponAudioSource != null && sound != null)
+        {
+            weaponAudioSource.PlayOneShot(sound);
+        }
     }
+
+    void Shoot()
+{
+    Debug.Log("GUN SHOOT CALLED");
+
+    PlayWeaponSound(gunShotSound);
+
+    if (currentWeapon.projectile == null)
+    {
+        return;
+    }
+
+    Instantiate(
+        currentWeapon.projectile,
+        firePoint.position,
+        firePoint.rotation
+    );
+}
 
     void MeleeAttack()
     {
+        PlayWeaponSound(batSwingSound);
+
         Debug.Log("BAT ATTACK");
     }
 
     void ShootLaser()
     {
+        PlayWeaponSound(laserShotSound);
+
         laser.SetActive(true);
 
         Vector2 origin = firePoint.position;
@@ -88,7 +114,6 @@ public class WeaponController : MonoBehaviour
 
         foreach (RaycastHit2D hit in hits)
         {
-
             if (hit.collider.CompareTag("Mosquito"))
             {
                 Debug.Log("LASER HIT MOSQUITO");
@@ -116,6 +141,8 @@ public class WeaponController : MonoBehaviour
 
     void ShootShotgun()
     {
+        PlayWeaponSound(shotgunShotSound);
+
         muzzleFlash.SetActive(true);
         Invoke(nameof(HideMuzzleFlash), 0.05f);
 

@@ -18,6 +18,8 @@ public class UpgradeManager : MonoBehaviour
     public AudioSource NukeAudio;
     
     private int upgradeStage = 0;
+    public AudioSource UpgradeAudio;
+    
     private bool nukeActivated = false;
     
     public GameObject UpgradeText;
@@ -58,7 +60,7 @@ public class UpgradeManager : MonoBehaviour
     
     public IEnumerator UpgradeCoroutine()
     {
-        
+        UpgradeAudio.Play();
         yield return new WaitForSeconds(1f);
         UpgradeText.SetActive(false);
     }
